@@ -16,10 +16,18 @@ OPENAI_KEY = os.getenv("OPENAI_KEY")
 client = OpenAI(api_key=OPENAI_KEY)
 
 
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🚀 Welcome to CryptoMarketAssist!\n\n"
+        "I can help with crypto questions, market education, and updates.\n\n"
+        "Try asking me a crypto question."
+    )
+
+
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\n/price bitcoin\n/price ethereum"
+            "Usage:\n/price bitcoin\n/price btc\n/price ethereum"
         )
         return
 
@@ -51,9 +59,7 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = response.json()
 
     if coin not in data:
-        await update.message.reply_text(
-            "Coin not found.\nTry: bitcoin, ethereum, solana, ripple"
-        )
+        await update.message.reply_text("Coin not found.")
         return
 
     current_price = data[coin]["usd"]
@@ -61,6 +67,8 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"💰 {coin.upper()}\n\nCurrent Price: ${current_price:,}"
     )
+
+
 async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question = update.message.text
 
