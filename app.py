@@ -16,12 +16,6 @@ OPENAI_KEY = os.getenv("OPENAI_KEY")
 client = OpenAI(api_key=OPENAI_KEY)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🚀 Welcome to CryptoMarketAssist!\n\n"
-        "I can help with crypto questions, market education, and updates.\n\n"
-        "Try asking me a crypto question."
-    )
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
@@ -31,17 +25,17 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     coin = context.args[0].lower()
 
-coins = {
-    "btc": "bitcoin",
-    "eth": "ethereum",
-    "sol": "solana",
-    "xrp": "ripple",
-    "bnb": "binancecoin",
-    "ada": "cardano",
-    "doge": "dogecoin"
-}
+    coins = {
+        "btc": "bitcoin",
+        "eth": "ethereum",
+        "sol": "solana",
+        "xrp": "ripple",
+        "bnb": "binancecoin",
+        "ada": "cardano",
+        "doge": "dogecoin"
+    }
 
-coin = coins.get(coin, coin)
+    coin = coins.get(coin, coin)
 
     url = (
         f"https://api.coingecko.com/api/v3/simple/price"
@@ -67,7 +61,6 @@ coin = coins.get(coin, coin)
     await update.message.reply_text(
         f"💰 {coin.upper()}\n\nCurrent Price: ${current_price:,}"
     )
-
 async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question = update.message.text
 
