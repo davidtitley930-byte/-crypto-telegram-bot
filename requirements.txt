@@ -3,3 +3,4 @@ openai>=1.30.0
 requests
 python-dotenv
 APScheduler
+feedparser
