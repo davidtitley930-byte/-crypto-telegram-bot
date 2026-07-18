@@ -1,4 +1,5 @@
 import os
+import requests
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -21,7 +22,39 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "I can help with crypto questions, market education, and updates.\n\n"
         "Try asking me a crypto question."
     )
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text(
+            "Usage:\n/price bitcoin\n/price ethereum"
+        )
+        return
 
+    coin = context.args[0].lower()
+
+    url = (
+        f"https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={coin}&vs_currencies=usd"
+    )
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        await update.message.reply_text("Unable to fetch price.")
+        return
+
+    data = response.json()
+
+    if coin not in data:
+        await update.message.reply_text(
+            "Coin not found.\nTry: bitcoin, ethereum, solana, ripple"
+        )
+        return
+
+    current_price = data[coin]["usd"]
+
+    await update.message.reply_text(
+        f"💰 {coin.upper()}\n\nCurrent Price: ${current_price:,}"
+    )
 
 async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question = update.message.text
@@ -53,6 +86,7 @@ def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("price", price))
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, ask_ai)
     )
