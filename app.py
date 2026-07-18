@@ -31,6 +31,18 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     coin = context.args[0].lower()
 
+coins = {
+    "btc": "bitcoin",
+    "eth": "ethereum",
+    "sol": "solana",
+    "xrp": "ripple",
+    "bnb": "binancecoin",
+    "ada": "cardano",
+    "doge": "dogecoin"
+}
+
+coin = coins.get(coin, coin)
+
     url = (
         f"https://api.coingecko.com/api/v3/simple/price"
         f"?ids={coin}&vs_currencies=usd"
