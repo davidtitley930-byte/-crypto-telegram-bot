@@ -2,5 +2,6 @@ services:
   - type: worker
     name: crypto-telegram-bot
     runtime: python
+    pythonVersion: "3.12.8"
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
