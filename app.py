@@ -1,5 +1,7 @@
 import os
 import requests
+import feedparser
+
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -8,7 +10,9 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
+
 from openai import OpenAI
+
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_KEY = os.getenv("OPENAI_KEY")
@@ -19,15 +23,17 @@ client = OpenAI(api_key=OPENAI_KEY)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🚀 Welcome to CryptoMarketAssist!\n\n"
-        "I can help with crypto questions, market education, and updates.\n\n"
-        "Try asking me a crypto question."
+        "I can help with crypto questions, prices, and market news.\n\n"
+        "Try:\n"
+        "/price btc\n"
+        "/news"
     )
 
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\n/price bitcoin\n/price btc\n/price ethereum"
+            "Usage:\n/price btc\n/price eth\n/price bitcoin"
         )
         return
 
@@ -46,26 +52,53 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     coin = coins.get(coin, coin)
 
     url = (
-        f"https://api.coingecko.com/api/v3/simple/price"
+        "https://api.coingecko.com/api/v3/simple/price"
         f"?ids={coin}&vs_currencies=usd"
     )
 
     response = requests.get(url)
 
     if response.status_code != 200:
-        await update.message.reply_text("Unable to fetch price.")
+        await update.message.reply_text(
+            "Unable to fetch price right now."
+        )
         return
 
     data = response.json()
 
     if coin not in data:
-        await update.message.reply_text("Coin not found.")
+        await update.message.reply_text(
+            "Coin not found."
+        )
         return
 
     current_price = data[coin]["usd"]
 
     await update.message.reply_text(
-        f"💰 {coin.upper()}\n\nCurrent Price: ${current_price:,}"
+        f"💰 {coin.upper()}\n\n"
+        f"Current Price: ${current_price:,}"
+    )
+
+
+async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    url = "https://news.google.com/rss/search?q=cryptocurrency"
+
+    feed = feedparser.parse(url)
+
+    if not feed.entries:
+        await update.message.reply_text(
+            "No news found right now."
+        )
+        return
+
+    headlines = []
+
+    for item in feed.entries[:5]:
+        headlines.append(f"• {item.title}")
+
+    await update.message.reply_text(
+        "📰 Latest Crypto News\n\n" +
+        "\n\n".join(headlines)
     )
 
 
@@ -79,8 +112,8 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "role": "system",
                 "content": (
                     "You are a helpful cryptocurrency education assistant. "
-                    "Provide information and explain concepts clearly. "
-                    "Do not promise profits or give guaranteed investment advice."
+                    "Explain concepts clearly. "
+                    "Do not promise profits or guaranteed investment advice."
                 ),
             },
             {
@@ -100,6 +133,8 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("price", price))
+    app.add_handler(CommandHandler("news", news))
+
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, ask_ai)
     )
