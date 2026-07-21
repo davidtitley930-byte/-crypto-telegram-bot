@@ -41,12 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\\n"
-            "/price btc\\n"
-            "/price eth\\n"
-            "/price sol\\n"
-            "/price xrp\\n"
-            "/price bnb"
+            "Usage:\\n/price btc\\n/price eth\\n/price sol\\n/price xrp\\n/price bnb"
         )
         return
 
@@ -72,24 +67,19 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = requests.get(url)
 
     if response.status_code != 200:
-        await update.message.reply_text(
-            "⚠️ Unable to fetch price right now."
-        )
+        await update.message.reply_text("⚠️ Unable to fetch price right now.")
         return
 
     data = response.json()
 
     if coin not in data:
-        await update.message.reply_text(
-            "❌ Coin not found."
-        )
+        await update.message.reply_text("❌ Coin not found.")
         return
 
     current_price = data[coin]["usd"]
 
     await update.message.reply_text(
-        f"💰 {coin.upper()}\\n\\n"
-        f"Current Price: ${current_price:,.2f}"
+        f"💰 {coin.upper()}\\n\\nCurrent Price: ${current_price:,.2f}"
     )
 
 
@@ -102,13 +92,10 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed = feedparser.parse(url)
 
     if not feed.entries:
-        await update.message.reply_text(
-            "⚠️ No news found right now."
-        )
+        await update.message.reply_text("⚠️ No news found right now.")
         return
 
     headlines = [item.title for item in feed.entries[:5]]
-
     raw_news = "\\n".join(headlines)
 
     ai_response = client.chat.completions.create(
@@ -119,7 +106,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "content": (
                     "You are a crypto market analyst. Summarize the headlines, "
                     "explain why they matter, and give a short market sentiment "
-                    "(Bullish, Bearish, or Neutral). Keep it under 180 words."
+                    "(Bullish, Bearish, or Neutral). Keep it under 150 words."
                 ),
             },
             {
@@ -149,8 +136,7 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "role": "system",
                 "content": (
                     "You are a helpful cryptocurrency education assistant. "
-                    "Explain concepts clearly. Do not promise profits or "
-                    "guaranteed investment advice."
+                    "Explain concepts clearly. Do not promise profits or guaranteed investment advice."
                 ),
             },
             {
