@@ -20,20 +20,33 @@ OPENAI_KEY = os.getenv("OPENAI_KEY")
 client = OpenAI(api_key=OPENAI_KEY)
 
 
+# =========================
+# START COMMAND
+# =========================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🚀 Welcome to CryptoMarketAssist!\\n\\n"
         "I can help with crypto questions, live prices, and AI market news.\\n\\n"
-        "Try:\\n"
+        "Available commands:\\n"
         "/price btc\\n"
+        "/price eth\\n"
+        "/price sol\\n"
         "/news\\n"
     )
 
 
+# =========================
+# LIVE PRICE COMMAND
+# =========================
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\\n/price btc\\n/price eth\\n/price bitcoin"
+            "Usage:\\n"
+            "/price btc\\n"
+            "/price eth\\n"
+            "/price sol\\n"
+            "/price xrp\\n"
+            "/price bnb"
         )
         return
 
@@ -46,7 +59,7 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "xrp": "ripple",
         "bnb": "binancecoin",
         "ada": "cardano",
-        "doge": "dogecoin"
+        "doge": "dogecoin",
     }
 
     coin = coins.get(coin, coin)
@@ -60,23 +73,29 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if response.status_code != 200:
         await update.message.reply_text(
-            "Unable to fetch price right now."
+            "⚠️ Unable to fetch price right now."
         )
         return
 
     data = response.json()
 
     if coin not in data:
-        await update.message.reply_text("Coin not found.")
+        await update.message.reply_text(
+            "❌ Coin not found."
+        )
         return
 
     current_price = data[coin]["usd"]
 
     await update.message.reply_text(
-        f"💰 {coin.upper()}\\n\\nCurrent Price: ${current_price:,.2f}"
+        f"💰 {coin.upper()}\\n\\n"
+        f"Current Price: ${current_price:,.2f}"
     )
 
 
+# =========================
+# AI NEWS ANALYSIS
+# =========================
 async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = "https://news.google.com/rss/search?q=cryptocurrency"
 
@@ -84,7 +103,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not feed.entries:
         await update.message.reply_text(
-            "No news found right now."
+            "⚠️ No news found right now."
         )
         return
 
@@ -117,6 +136,9 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+# =========================
+# GENERAL AI CHAT
+# =========================
 async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     question = update.message.text
 
@@ -143,6 +165,9 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(answer)
 
 
+# =========================
+# MAIN APP
+# =========================
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
 
