@@ -22,18 +22,18 @@ client = OpenAI(api_key=OPENAI_KEY)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🚀 Welcome to CryptoMarketAssist!\n\n"
-        "I can help with crypto questions, prices, and market news.\n\n"
-        "Try:\n"
-        "/price btc\n"
-        "/news"
+        "🚀 Welcome to CryptoMarketAssist!\\n\\n"
+        "I can help with crypto questions, live prices, and AI market news.\\n\\n"
+        "Try:\\n"
+        "/price btc\\n"
+        "/news\\n"
     )
 
 
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\n/price btc\n/price eth\n/price bitcoin"
+            "Usage:\\n/price btc\\n/price eth\\n/price bitcoin"
         )
         return
 
@@ -67,16 +67,13 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = response.json()
 
     if coin not in data:
-        await update.message.reply_text(
-            "Coin not found."
-        )
+        await update.message.reply_text("Coin not found.")
         return
 
     current_price = data[coin]["usd"]
 
     await update.message.reply_text(
-        f"💰 {coin.upper()}\n\n"
-        f"Current Price: ${current_price:,}"
+        f"💰 {coin.upper()}\\n\\nCurrent Price: ${current_price:,.2f}"
     )
 
 
@@ -91,14 +88,32 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    headlines = []
+    headlines = [item.title for item in feed.entries[:5]]
 
-    for item in feed.entries[:5]:
-        headlines.append(f"• {item.title}")
+    raw_news = "\\n".join(headlines)
+
+    ai_response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a crypto market analyst. Summarize the headlines, "
+                    "explain why they matter, and give a short market sentiment "
+                    "(Bullish, Bearish, or Neutral). Keep it under 180 words."
+                ),
+            },
+            {
+                "role": "user",
+                "content": raw_news,
+            },
+        ],
+    )
+
+    summary = ai_response.choices[0].message.content
 
     await update.message.reply_text(
-        "📰 Latest Crypto News\n\n" +
-        "\n\n".join(headlines)
+        f"📰 Crypto Market Intelligence\\n\\n{summary}"
     )
 
 
@@ -112,8 +127,8 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "role": "system",
                 "content": (
                     "You are a helpful cryptocurrency education assistant. "
-                    "Explain concepts clearly. "
-                    "Do not promise profits or guaranteed investment advice."
+                    "Explain concepts clearly. Do not promise profits or "
+                    "guaranteed investment advice."
                 ),
             },
             {
