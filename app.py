@@ -25,13 +25,13 @@ client = OpenAI(api_key=OPENAI_KEY)
 # =========================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🚀 Welcome to CryptoMarketAssist!\\n\\n"
-        "I can help with crypto questions, live prices, and AI market news.\\n\\n"
-        "Available commands:\\n"
-        "/price btc\\n"
-        "/price eth\\n"
-        "/price sol\\n"
-        "/news\\n"
+        "🚀 Welcome to CryptoMarketAssist!\n\n"
+        "I can help with crypto questions, live prices, and AI market news.\n\n"
+        "Available commands:\n"
+        "/price btc\n"
+        "/price eth\n"
+        "/price sol\n"
+        "/news\n"
     )
 
 
@@ -41,7 +41,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\\n/price btc\\n/price eth\\n/price sol\\n/price xrp\\n/price bnb"
+            "Usage:\n"
+            "/price btc\n"
+            "/price eth\n"
+            "/price sol\n"
+            "/price xrp\n"
+            "/price bnb"
         )
         return
 
@@ -79,7 +84,7 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     current_price = data[coin]["usd"]
 
     await update.message.reply_text(
-        f"💰 {coin.upper()}\\n\\nCurrent Price: ${current_price:,.2f}"
+        f"💰 {coin.upper()}\n\nCurrent Price: ${current_price:,.2f}"
     )
 
 
@@ -96,7 +101,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     headlines = [item.title for item in feed.entries[:5]]
-    raw_news = "\\n".join(headlines)
+    raw_news = "\n".join(headlines)
 
     ai_response = client.chat.completions.create(
         model="gpt-4.1-mini",
@@ -119,7 +124,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
     summary = ai_response.choices[0].message.content
 
     await update.message.reply_text(
-        f"📰 Crypto Market Intelligence\\n\\n{summary}"
+        f"📰 Crypto Market Intelligence\n\n{summary}"
     )
 
 
