@@ -31,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/price btc\n"
         "/price eth\n"
         "/price sol\n"
-        "/news\n"
+        "/news"
     )
 
 
@@ -41,12 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text(
-            "Usage:\n"
-            "/price btc\n"
-            "/price eth\n"
-            "/price sol\n"
-            "/price xrp\n"
-            "/price bnb"
+            "Usage:\n/price btc\n/price eth\n/price sol\n/price xrp\n/price bnb"
         )
         return
 
@@ -123,6 +118,7 @@ async def news(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     summary = ai_response.choices[0].message.content
 
+    # IMPORTANT: Only one reply is sent here
     await update.message.reply_text(
         f"📰 Crypto Market Intelligence\n\n{summary}"
     )
@@ -162,10 +158,12 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
 
+    # Register each command only once
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("price", price))
     app.add_handler(CommandHandler("news", news))
 
+    # AI chat for normal text only (commands are excluded)
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, ask_ai)
     )
